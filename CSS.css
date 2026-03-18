@@ -1,0 +1,59 @@
+/* Reset to default styles */
+body, h1, h2, h3, p, ul, li {
+    margin: 0;
+    padding: 0;
+}
+
+/* Set a background color */
+body {
+    background-color: #0372DB; /* blue background */
+    font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Center the content */
+.container {
+    width: 80%;
+    margin: 20px auto;
+}
+
+/* Style for headings */
+h1, h2 {
+    background-color:#0372DD ; /* slightly darker blue background */
+    color: #BFF2F8; /* teal header colour */
+    padding: 25px 25px; /* Padding */
+    font-size:30px;
+}
+
+/* Style for paragraphs */
+p {
+    color: #FFF8E7; /* Creamy white */
+    line-height: 1.5;
+    font-size:20px;
+}
+
+/* Style for footer */
+
+footer {
+    background-color: ##0372DE; /* slightly darker still (blue) background */
+    color: black; 
+    padding: 10px; /* Padding around the content */
+    text-align: center; /* Center-align text */
+    font-size: 6px;
+    }
+
+/* Style for buttons */
+.button {
+    display: inline-block;
+    padding: 15px 30px;
+    background-color: Gold; /* Gold button */
+    color: Gold;
+    border-radius: 7px;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #FFF8E7; /* the same colour as paragraph text for hovering, so creamy white */
+}
