@@ -59,25 +59,7 @@ LOGIN SYSTEM, frontend needs further development for a user system
 // Hardcoded credentials (for now)
 const USERNAME = "admin";
 const PASSWORD = "password123";
-/* comment out due to potential bug
-function login() {
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
-    const message = document.getElementById("message");
 
-    // check function
-    if (user === USERNAME && pass === PASSWORD) {
-        message.textContent = "Login successful!";
-        message.className = "success";
-
-        // Redirect to database page
-        window.location.href = "database.html";
-        // window.location.href = "database.html";
-    } else {
-        message.textContent = "Invalid credentials.";
-        message.className = "error";
-    }
-    */
     function login() {
     // Get values from input fields
     const user = document.getElementById("username").value;
