@@ -1,7 +1,8 @@
 # HonsProject
 This private repo is for the honours projects front end/ui. connected to the source code hosted locally on my laptop
 
-index.html is the main page of the site and functions as the login page and a informational page for users/new users. currently has a admin account with a weak password system to be upgraded later once the site has full functionality elsewhere.
+index.html is the main page of the site and functions as the login page and a informational page for users/new users. currently has a admin account with a weak password system to be upgraded later once the site has full functionality elsewhere. 
+the link to the database page is: https://wildw0lf1o14.github.io/HonsProject/index.html
 
 database.html is what the name describes. this part of the site is the database, this is where the database can be made and editied with the aim of also being able to edit existing database files. encryption systems that are the focus of the project will be added in soon once further functions have been added.
 
