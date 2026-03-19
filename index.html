@@ -109,13 +109,13 @@ LOGIN SYSTEM, frontend needs further development for a user system
 // Hardcoded credentials (for now)
 const USERNAME = "admin";
 const PASSWORD = "password123";
-
+/* comment out due to potential bug
 function login() {
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
     const message = document.getElementById("message");
 
-    // Simple check
+    // check function
     if (user === USERNAME && pass === PASSWORD) {
         message.textContent = "Login successful!";
         message.className = "success";
@@ -127,6 +127,20 @@ function login() {
         message.textContent = "Invalid credentials.";
         message.className = "error";
     }
+    */
+    function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+
+    if (user === "admin" && pass === "password123") {
+        // Force string storage
+        localStorage.setItem("loggedIn", JSON.stringify(true));
+
+        window.location.href = "database.html";
+    } else {
+        document.getElementById("message").textContent = "Invalid credentials.";
+    }
+}
 }
 </script>
 
