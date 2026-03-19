@@ -101,6 +101,8 @@
 =========================================
 */
 
+//force login token to stay open because its not working correctly as of the previous version, can remove later
+    const loggedIn = JSON.parse(localStorage.getItem("loggedIn"));
 // Prevent access if not logged in
 if (localStorage.getItem("loggedIn") !== "true") {
     window.location.href = "index.html";
