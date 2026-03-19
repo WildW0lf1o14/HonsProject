@@ -1,16 +1,134 @@
-<!DOCTYPE html> 
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>40589481 Honours Project Database viewer mk1</title>
-        <link rel="stylesheet" href="https://wildw0lf1o14.github.io/CSS.css"> 
-    </head> 
-    <body>
-        <h1>Honours Project Database viewer/h1>
-        <h2>this is still in development on the web front for the next few days</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure Database Project</title>
 
-        <p>Welcome to the web viewer, this is placeholder text.</p>
-        <p>What do you want to do?</p>
-    </body>
-</html>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f8;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .info {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .login-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+        }
+
+        button {
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .success {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- -------------------------
+         PROJECT INFO SECTION
+    -------------------------- -->
+    <div class="info">
+        <h1>Secure Database System</h1>
+
+        <p>
+            This project explores the design and implementation of a local database system
+            with layered encryption techniques. The goal is to evaluate different approaches
+            to securing sensitive user data, including encryption at rest and during processing.
+        </p>
+
+        <p>
+            Future features include:
+            <ul>
+                <li>Encrypted data storage</li>
+                <li>Secure authentication mechanisms</li>
+                <li>Comparison of encryption strategies</li>
+                <li>Attack simulation and analysis</li>
+            </ul>
+        </p>
+    </div>
+
+    <!-- -------------------------
+         LOGIN SECTION
+    -------------------------- -->
+    <div class="login-box">
+        <h2>Login</h2>
+
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+
+        <button onclick="login()">Login</button>
+
+        <p id="message"></p>
+    </div>
+
+</div>
+
+<script>
+/*
+=========================================
+LOGIN SYSTEM, frontend needs further development for a user system
+=========================================
+*/
+
+// Hardcoded credentials (for now)
+const USERNAME = "admin";
+const PASSWORD = "password123";
+
+function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+    const message = document.getElementById("message");
+
+    // Simple check
+    if (user === USERNAME && pass === PASSWORD) {
+        message.textContent = "Login successful!";
+        message.className = "success";
+
+        // Redirect to your database page later
+        // window.location.href = "database.html";
+    } else {
+        message.textContent = "Invalid credentials.";
+        message.className = "error";
+    }
+}
+</script>
+
+</body>
+</html> 
+
