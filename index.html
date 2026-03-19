@@ -120,7 +120,8 @@ function login() {
         message.textContent = "Login successful!";
         message.className = "success";
 
-        // Redirect to your database page later
+        // Redirect to database page
+        window.location.href = "database.html";
         // window.location.href = "database.html";
     } else {
         message.textContent = "Invalid credentials.";
