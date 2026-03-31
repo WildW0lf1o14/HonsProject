@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Database</title>
 
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
     /* ----------------------------
        Body / General Styles
@@ -11,33 +14,36 @@
     body {
         font-family: "Times New Roman", serif;
         margin: 40px;
-        background-color: #000000; /* black background */
-        color: #FF0000; /* red text */
+        background-color: #000000;
+        color: #FF0000;
     }
 
-    h1 {
+    h1, h2, h3 {
         text-align: center;
-        color: #FF0000; /* red headings */
+        color: #FF0000;
     }
 
     /* ----------------------------
        Form / Input Area
     ---------------------------- */
     form {
-        background-color: #1a1a1a; /* dark form background for contrast */
+        background-color: #1a1a1a;
         padding: 20px;
         border-radius: 10px;
         margin-bottom: 20px;
-        color: #FF0000; /* red text inside form */
     }
 
-    input, select, button {
+    input, select, button, textarea {
         margin: 5px;
         padding: 8px;
         font-family: "Times New Roman", serif;
-        background-color: #333333; /* dark input background */
-        color: #FF0000; /* red text */
-        border: 1px solid #FF0000; /* red border */
+        background-color: #333333;
+        color: #FF0000;
+        border: 1px solid #FF0000;
+    }
+
+    textarea {
+        width: 100%;
     }
 
     /* ----------------------------
@@ -46,13 +52,12 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        background-color: #1a1a1a; /* dark table background */
-        color: #FF0000; /* red text inside table */
+        background-color: #1a1a1a;
     }
 
     th, td {
         padding: 10px;
-        border: 1px solid #FF0000; /* red borders */
+        border: 1px solid #FF0000;
         text-align: left;
     }
 
@@ -61,15 +66,14 @@
     ---------------------------- */
     button {
         cursor: pointer;
-        background-color: #FF0000; /* red button */
-        color: #000000; /* black text on button */
+        background-color: #FF0000;
+        color: #000000;
         border: none;
         border-radius: 5px;
-        transition: background-color 0.3s ease;
     }
 
     button:hover {
-        background-color: #FF4C4C; /* lighter red hover */
+        background-color: #FF4C4C;
     }
 
     /* ----------------------------
@@ -78,6 +82,22 @@
     .top-bar {
         text-align: right;
         margin-bottom: 10px;
+    }
+
+    /* ----------------------------
+       Benchmark Panel
+    ---------------------------- */
+    .benchmark {
+        margin-top: 30px;
+        padding: 20px;
+        border: 1px solid #FF0000;
+        background-color: #1a1a1a;
+    }
+
+    #results {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #FF0000;
     }
 </style>
 
@@ -90,7 +110,9 @@
 
 <h1>Database System</h1>
 
-<!-- INPUT FORM -->
+<!-- =========================
+     ORIGINAL DATABASE FORM
+========================= -->
 <form id="recordForm">
     <input type="text" id="id" placeholder="ID" required>
     <input type="text" id="first_name" placeholder="First Name" required>
@@ -112,7 +134,9 @@
     <button type="submit">Add Record</button>
 </form>
 
-<!-- TABLE -->
+<!-- =========================
+     ORIGINAL TABLE
+========================= -->
 <table>
     <thead>
         <tr>
@@ -128,27 +152,56 @@
     <tbody id="tableBody"></tbody>
 </table>
 
+<!-- =========================
+     BENCHMARK SECTION
+========================= -->
+<div class="benchmark">
+
+<h2>Encryption Benchmarking</h2>
+
+<textarea id="testInput" rows="4" placeholder="Enter text to test..."></textarea>
+
+<br>
+
+<select id="modeSelect">
+    <option value="AES">AES</option>
+    <option value="LLM">LLM</option>
+    <option value="HYBRID">Hybrid</option>
+</select>
+
+<button onclick="runBenchmark()">Run Benchmark</button>
+
+<h3>Upload File</h3>
+<input type="file" id="fileInput">
+<button onclick="uploadFile()">Test File</button>
+
+<br><br>
+
+<button onclick="downloadResults()">Download CSV</button>
+
+<div id="results"></div>
+
+<h3>Performance Graph</h3>
+<canvas id="performanceChart"></canvas>
+
+</div>
+
 <script>
 /*
 =========================================
- AUTH CHECK (VERY IMPORTANT)
+ AUTH CHECK
 =========================================
 */
-
-// Get login state (convert from storage)
 const loggedIn = JSON.parse(localStorage.getItem("loggedIn"));
-
-// Redirect if not logged in
 if (!loggedIn) {
     window.location.href = "index.html";
 }
 
 /*
 =========================================
- DATABASE LOGIC (localStorage)
+ LOCAL DATABASE (UNCHANGED)
 =========================================
 */
-
 let db = JSON.parse(localStorage.getItem("database")) || [];
 
 function saveDB() {
@@ -211,6 +264,85 @@ function logout() {
 }
 
 renderTable();
+
+/*
+=========================================
+ BENCHMARK SYSTEM (NEW)
+=========================================
+*/
+
+let chart;
+let labels = [];
+let encData = [];
+let decData = [];
+
+async function runBenchmark() {
+    const text = document.getElementById("testInput").value;
+    const mode = document.getElementById("modeSelect").value;
+
+    await fetch("http://127.0.0.1:5000/set_mode", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({mode})
+    });
+
+    const res = await fetch("http://127.0.0.1:5000/benchmark", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text})
+    });
+
+    const data = await res.json();
+
+    document.getElementById("results").innerHTML = `
+        <p>Encrypted: ${data.encrypted}</p>
+        <p>Decrypted: ${data.decrypted}</p>
+        <p>Enc Time: ${data.encryption_time.toFixed(6)}s</p>
+        <p>Dec Time: ${data.decryption_time.toFixed(6)}s</p>
+    `;
+
+    updateChart(mode, data.encryption_time, data.decryption_time);
+}
+
+async function uploadFile() {
+    const file = document.getElementById("fileInput").files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("http://127.0.0.1:5000/benchmark_file", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+    const mode = document.getElementById("modeSelect").value;
+
+    updateChart(mode, data.encryption_time, data.decryption_time);
+}
+
+function updateChart(mode, enc, dec) {
+    labels.push(mode + " #" + (labels.length + 1));
+    encData.push(enc);
+    decData.push(dec);
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(document.getElementById("performanceChart"), {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [
+                { label: "Encryption Time", data: encData },
+                { label: "Decryption Time", data: decData }
+            ]
+        }
+    });
+}
+
+function downloadResults() {
+    window.open("http://127.0.0.1:5000/download_results");
+}
 </script>
+
 </body>
 </html>
