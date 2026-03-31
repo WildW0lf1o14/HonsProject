@@ -1,1 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Database</title>
 
+    <style>
+    /* ----------------------------
+       Body / General Styles
+    ---------------------------- */
+    body {
+        font-family: "Times New Roman", serif;
+        margin: 40px;
+        background-color: #000000; /* black background */
+        color: #FF0000; /* red text */
+    }
+
+    h1 {
+        text-align: center;
+        color: #FF0000; /* red headings */
+    }
+
+    /* ----------------------------
+       Form / Input Area
+    ---------------------------- */
+    form {
+        background-color: #1a1a1a; /* dark form background for contrast */
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        color: #FF0000; /* red text inside form */
+    }
+
+    input, select, button {
+        margin: 5px;
+        padding: 8px;
+        font-family: "Times New Roman", serif;
+        background-color: #333333; /* dark input background */
+        color: #FF0000; /* red text */
+        border: 1px solid #FF0000; /* red border */
+    }
+
+    /* ----------------------------
+       Table Styles
+    ---------------------------- */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #1a1a1a; /* dark table background */
+        color: #FF0000; /* red text inside table */
+    }
+
+    th, td {
+        padding: 10px;
+        border: 1px solid #FF0000; /* red borders */
+        text-align: left;
+    }
+
+    /* ----------------------------
+       Buttons
+    ---------------------------- */
+    button {
+        cursor: pointer;
+        background-color: #FF0000; /* red button */
+        color: #000000; /* black text on button */
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #FF4C4C; /* lighter red hover */
+    }
+
+    /* ----------------------------
+       Top Bar
+    ---------------------------- */
+    .top-bar {
+        text-align: right;
+        margin-bottom: 10px;
+    }
+</style>
+
+</head>
+<body>
+
+<div class="top-bar">
+    <button onclick="logout()">Logout</button>
+</div>
+
+<h1>Database System</h1>
+
+<!-- INPUT FORM -->
+<form id="recordForm">
+    <input type="text" id="id" placeholder="ID" required>
+    <input type="text" id="first_name" placeholder="First Name" required>
+    <input type="text" id="last_name" placeholder="Last Name" required>
+    <input type="number" id="age" placeholder="Age" required>
+
+    <select id="gender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+        <option value="prefer not to say">Prefer not to say</option>
+    </select>
+
+    <select id="employment">
+        <option value="employed">Employed</option>
+        <option value="unemployed">Unemployed</option>
+    </select>
+
+    <button type="submit">Add Record</button>
+</form>
+
+<!-- TABLE -->
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>First</th>
+            <th>Last</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Employment</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+/*
+=========================================
+ AUTH CHECK (VERY IMPORTANT)
+=========================================
+*/
+
+// Get login state (convert from storage)
+const loggedIn = JSON.parse(localStorage.getItem("loggedIn"));
+
+// Redirect if not logged in
+if (!loggedIn) {
+    window.location.href = "index.html";
+}
+
+/*
+=========================================
+ DATABASE LOGIC (localStorage)
+=========================================
+*/
+
+let db = JSON.parse(localStorage.getItem("database")) || [];
+
+function saveDB() {
+    localStorage.setItem("database", JSON.stringify(db));
+}
+
+function renderTable() {
+    const table = document.getElementById("tableBody");
+    table.innerHTML = "";
+
+    db.forEach((record, index) => {
+        table.innerHTML += `
+            <tr>
+                <td>${record.id}</td>
+                <td>${record.first_name}</td>
+                <td>${record.last_name}</td>
+                <td>${record.age}</td>
+                <td>${record.gender}</td>
+                <td>${record.employment}</td>
+                <td>
+                    <button onclick="deleteRecord(${index})">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+document.getElementById("recordForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const record = {
+        id: document.getElementById("id").value,
+        first_name: document.getElementById("first_name").value,
+        last_name: document.getElementById("last_name").value,
+        age: parseInt(document.getElementById("age").value),
+        gender: document.getElementById("gender").value,
+        employment: document.getElementById("employment").value
+    };
+
+    if (db.some(r => r.id === record.id)) {
+        alert("ID already exists!");
+        return;
+    }
+
+    db.push(record);
+    saveDB();
+    renderTable();
+    document.getElementById("recordForm").reset();
+});
+
+function deleteRecord(index) {
+    db.splice(index, 1);
+    saveDB();
+    renderTable();
+}
+
+function logout() {
+    localStorage.removeItem("loggedIn");
+    window.location.href = "index.html";
+}
+
+renderTable();
+</script>
+</body>
+</html>
