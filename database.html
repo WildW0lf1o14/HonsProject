@@ -187,6 +187,8 @@
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 /*
 =========================================
  AUTH CHECK
@@ -252,13 +254,13 @@ document.getElementById("recordForm").addEventListener("submit", function(e) {
     document.getElementById("recordForm").reset();
 });
 
-function deleteRecord(index) {
+window.deleteRecord = function(index) {
     db.splice(index, 1);
     saveDB();
     renderTable();
 }
 
-function logout() {
+window.logout = function() {
     localStorage.removeItem("loggedIn");
     window.location.href = "index.html";
 }
@@ -267,7 +269,7 @@ renderTable();
 
 /*
 =========================================
- BENCHMARK SYSTEM (NEW)
+ BENCHMARK SYSTEM
 =========================================
 */
 
@@ -276,7 +278,7 @@ let labels = [];
 let encData = [];
 let decData = [];
 
-async function runBenchmark() {
+window.runBenchmark = async function() {
     const text = document.getElementById("testInput").value;
     const mode = document.getElementById("modeSelect").value;
 
@@ -304,8 +306,9 @@ async function runBenchmark() {
     updateChart(mode, data.encryption_time, data.decryption_time);
 }
 
-async function uploadFile() {
+window.uploadFile = async function() {
     const file = document.getElementById("fileInput").files[0];
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -339,9 +342,11 @@ function updateChart(mode, enc, dec) {
     });
 }
 
-function downloadResults() {
+window.downloadResults = function() {
     window.open("http://127.0.0.1:5000/download_results");
 }
+
+});
 </script>
 
 </body>
