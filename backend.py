@@ -253,6 +253,13 @@ def download_results():
     """
     return send_file("results.csv", as_attachment=True)
 
+# =========================
+# HEALTH CHECK ENDPOINT
+# =========================
+@app.route("/health", methods=["GET"])
+def health():
+    return {"status": "ok"}, 200
+
 
 # =========================================
 # RUN SERVER
