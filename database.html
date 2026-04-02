@@ -118,11 +118,16 @@
 
 </head>
 <body>
-
+<!-- ======================================
+    LOGIN/LOGOUT BUTTON AND ONLINE/OFFLINE
+============================================ -->
 <div class="top-bar">
     <button onclick="logout()">Logout</button>
 </div>
 
+<div id="statusIndicator">
+    Backend Status: <span id="statusText">Checking Connection</span>
+</div>
 <h1>Database System</h1>
 
 <!-- =========================
@@ -200,6 +205,12 @@
 <canvas id="performanceChart"></canvas>
 
 </div>
+
+
+
+<!-- =========================
+    SCRIPT STARTS HERE
+========================= -->
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -360,6 +371,37 @@ function updateChart(mode, enc, dec) {
 window.downloadResults = function() {
     window.open("http://127.0.0.1:5000/download_results");
 }
+
+/*
+=========================================
+ BACKEND STATUS INDICATOR (NEW)
+=========================================
+*/
+
+async function checkBackendStatus() {
+    const statusText = document.getElementById("statusText");
+
+    try {
+        const res = await fetch("http://127.0.0.1:5000/health");
+
+        if (res.ok) {
+            statusText.textContent = "Online";
+            statusText.className = "online";
+        } else {
+            throw new Error("Server error");
+        }
+
+    } catch (error) {
+        statusText.textContent = "Offline";
+        statusText.className = "offline";
+    }
+}
+
+// Run once when page loads
+checkBackendStatus();
+
+// Refresh every 10 seconds
+setInterval(checkBackendStatus, 10000);
 
 });
 </script>
