@@ -5,6 +5,10 @@
 # Flask handles API routing (frontend <-> backend communication)
 from flask import Flask, request, jsonify, send_file
 
+
+#Import Flask CORS to ensure features work as intended
+from flask_cors import CORS
+
 # Standard libraries for data handling and system operations
 import json, os, time, base64, csv
 
@@ -16,7 +20,7 @@ from cryptography.fernet import Fernet
 
 # Create Flask app instance
 app = Flask(__name__)
-
+CORS(app)
 # =========================================
 # DATABASE SETUP (LOCAL JSON STORAGE)
 # =========================================
