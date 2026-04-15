@@ -101,9 +101,9 @@ def llm_decrypt(text):
     decoded = base64.b64decode(text).decode()
     return decoded.replace("_", " ")
 
-# -----------------------------------------
-# MODE 3: HYBRID ENCRYPTION
-# -----------------------------------------
+# -------------------------------------------------------
+# MODE 3: HYBRID ENCRYPTION - REVERSIBLE TRANSFORMATION
+# -------------------------------------------------------
 
 def hybrid_encrypt(text):
     """
