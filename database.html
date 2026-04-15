@@ -114,6 +114,28 @@
         padding: 10px;
         border: 1px solid #FF0000;
     }
+
+
+    /* ----------------------------
+   Progress Bar / File Status
+   Gives visual feedback during upload
+---------------------------- */
+#progressContainer {
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #FF0000;
+    background-color: #1a1a1a;
+}
+
+#progressText {
+    margin-top: 8px;
+    color: #FF4C4C;
+}
+
+progress {
+    width: 100%;
+    height: 20px;
+}
 </style>
 
 </head>
@@ -128,7 +150,9 @@
 <div id="statusIndicator">
     Backend Status: <span id="statusText">Checking Connection</span>
 </div>
+
 <h1>Database System</h1>
+
 
 <!-- =========================
      ORIGINAL DATABASE FORM
@@ -198,6 +222,16 @@
 <br><br>
 
 <button onclick="downloadResults()">Download CSV</button>
+
+<!-- =========================
+FILE PROCESSING PROGRESS
+Shows upload/processing state
+========================= -->
+<div id="progressContainer" style="display:none; margin-top: 10px;">
+    <label for="progressBar">Processing file...</label>
+    <progress id="progressBar" value="0" max="100" style="width: 100%;"></progress>
+    <p id="progressText">Starting...</p>
+</div>
 
 <div id="results"></div>
 
@@ -331,6 +365,9 @@ window.runBenchmark = async function() {
 
     updateChart(mode, data.encryption_time, data.decryption_time);
 }
+/*
+=========================================
+origional uploadFile, remove when patched
 
 window.uploadFile = async function() {
     const file = document.getElementById("fileInput").files[0];
@@ -348,22 +385,193 @@ window.uploadFile = async function() {
 
     updateChart(mode, data.encryption_time, data.decryption_time);
 }
+=========================================
+*/
 
+
+/*
+=========================================
+ FILE UPLOAD + BENCHMARK
+ Sends selected file to backend,
+ shows progress state,
+ displays returned results,
+ and updates performance graph
+=========================================
+*/
+window.uploadFile = async function() {
+    const file = document.getElementById("fileInput").files[0];
+    const mode = document.getElementById("modeSelect").value;
+
+    // Result + progress UI elements
+    const resultsBox = document.getElementById("results");
+    const progressContainer = document.getElementById("progressContainer");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+
+    // Prevent empty upload attempts
+    if (!file) {
+        alert("Please choose a file first.");
+        return;
+    }
+
+    try {
+        /*
+        -----------------------------------------
+        Show progress panel
+        -----------------------------------------
+        */
+        progressContainer.style.display = "block";
+        progressBar.value = 10;
+        progressText.textContent = "Preparing upload...";
+
+        /*
+        -----------------------------------------
+        Send chosen encryption mode
+        Ensures file benchmark uses correct mode
+        -----------------------------------------
+        */
+        await fetch("http://127.0.0.1:5000/set_mode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode })
+        });
+
+        progressBar.value = 25;
+        progressText.textContent = "Uploading file...";
+
+        /*
+        -----------------------------------------
+        Create multipart form data
+        for backend file upload
+        -----------------------------------------
+        */
+        const formData = new FormData();
+        formData.append("file", file);
+
+        /*
+        -----------------------------------------
+        Send file to backend benchmark route
+        -----------------------------------------
+        */
+        const res = await fetch("http://127.0.0.1:5000/benchmark_file", {
+            method: "POST",
+            body: formData
+        });
+
+        progressBar.value = 75;
+        progressText.textContent = "Processing benchmark results...";
+
+        const data = await res.json();
+
+        /*
+        -----------------------------------------
+        Handle backend-side errors
+        -----------------------------------------
+        */
+        if (!res.ok) {
+            throw new Error(data.error || "File benchmark failed.");
+        }
+
+        /*
+        -----------------------------------------
+        Show returned benchmark output
+        in results panel
+        -----------------------------------------
+        */
+        resultsBox.innerHTML = `
+            <p><strong>Uploaded File:</strong> ${file.name}</p>
+            <p><strong>Encrypted:</strong> ${data.encrypted}</p>
+            <p><strong>Decrypted:</strong> ${data.decrypted}</p>
+            <p><strong>Encryption Time:</strong> ${data.encryption_time.toFixed(6)}s</p>
+            <p><strong>Decryption Time:</strong> ${data.decryption_time.toFixed(6)}s</p>
+        `;
+
+        /*
+        -----------------------------------------
+        Begin To Update chart
+        -----------------------------------------
+        */
+        progressBar.value = 90;
+        progressText.textContent = "Generating graph...";
+
+        updateChart(mode, data.encryption_time, data.decryption_time);
+
+        /*
+        -----------------------------------------
+        Finish progress UI
+        -----------------------------------------
+        */
+        progressBar.value = 100;
+        progressText.textContent = "Process Complete, Results Generated.";
+
+        // Hide progress panel shortly after completion
+        setTimeout(() => {
+            progressContainer.style.display = "none";
+            progressBar.value = 0;
+            progressText.textContent = "Starting...";
+        }, 1200);
+
+    } catch (error) {
+        /*
+        -----------------------------------------
+         Display frontend/network/backend errors
+        -----------------------------------------
+        */
+        console.error("Upload error:", error);
+        resultsBox.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+        progressText.textContent = "Failed.";
+    }
+}
+
+/*
+=========================================
+ CHART UPDATE
+ Adds latest benchmark timings to graph
+=========================================
+*/
 function updateChart(mode, enc, dec) {
+    const canvas = document.getElementById("performanceChart");
+
+    // Prevent graph code from failing if canvas is missing
+    if (!canvas) {
+        console.error("performanceChart canvas not found.");
+        return;
+    }
+
+    // Add latest run to chart data arrays
     labels.push(mode + " #" + (labels.length + 1));
     encData.push(enc);
     decData.push(dec);
 
-    if (chart) chart.destroy();
+    // Destroy previous chart instance before rebuilding
+    if (chart) {
+        chart.destroy();
+    }
 
-    chart = new Chart(document.getElementById("performanceChart"), {
+    // Build new bar chart
+    chart = new Chart(canvas, {
         type: "bar",
         data: {
             labels: labels,
             datasets: [
-                { label: "Encryption Time", data: encData },
-                { label: "Decryption Time", data: decData }
+                {
+                    label: "Encryption Time",
+                    data: encData
+                },
+                {
+                    label: "Decryption Time",
+                    data: decData
+                }
             ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
         }
     });
 }
@@ -400,8 +608,8 @@ async function checkBackendStatus() {
 // Run once when page loads
 checkBackendStatus();
 
-// Refresh every 10 seconds
-setInterval(checkBackendStatus, 10000);
+// Refresh every 20 seconds
+setInterval(checkBackendStatus, 20000);
 
 });
 </script>
