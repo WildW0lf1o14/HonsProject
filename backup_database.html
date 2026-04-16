@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <title>Database</title>
 
+    <!-- Chart.js core -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Plugin for showing values directly on bars/pie charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
     <style>
     /* ----------------------------
        Body / General Styles
@@ -11,33 +17,36 @@
     body {
         font-family: "Times New Roman", serif;
         margin: 40px;
-        background-color: #000000; /* black background */
-        color: #FF0000; /* red text */
+        background-color: #000000;
+        color: #FF0000;
     }
 
-    h1 {
+    h1, h2, h3 {
         text-align: center;
-        color: #FF0000; /* red headings */
+        color: #FF0000;
     }
 
     /* ----------------------------
        Form / Input Area
     ---------------------------- */
     form {
-        background-color: #1a1a1a; /* dark form background for contrast */
+        background-color: #1a1a1a;
         padding: 20px;
         border-radius: 10px;
         margin-bottom: 20px;
-        color: #FF0000; /* red text inside form */
     }
 
-    input, select, button {
+    input, select, button, textarea {
         margin: 5px;
         padding: 8px;
         font-family: "Times New Roman", serif;
-        background-color: #333333; /* dark input background */
-        color: #FF0000; /* red text */
-        border: 1px solid #FF0000; /* red border */
+        background-color: #333333;
+        color: #FF0000;
+        border: 1px solid #FF0000;
+    }
+
+    textarea {
+        width: 100%;
     }
 
     /* ----------------------------
@@ -46,13 +55,12 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        background-color: #1a1a1a; /* dark table background */
-        color: #FF0000; /* red text inside table */
+        background-color: #1a1a1a;
     }
 
     th, td {
         padding: 10px;
-        border: 1px solid #FF0000; /* red borders */
+        border: 1px solid #FF0000;
         text-align: left;
     }
 
@@ -61,15 +69,30 @@
     ---------------------------- */
     button {
         cursor: pointer;
-        background-color: #FF0000; /* red button */
-        color: #000000; /* black text on button */
+        background-color: #FF0000;
+        color: #000000;
         border: none;
         border-radius: 5px;
-        transition: background-color 0.3s ease;
     }
 
     button:hover {
-        background-color: #FF4C4C; /* lighter red hover */
+        background-color: #FF4C4C;
+    }
+
+    /* ----------------------------
+       Online / Offline Status
+    ---------------------------- */
+    #statusIndicator {
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+
+    .online {
+        color: #00FF00;
+    }
+
+    .offline {
+        color: #FFFF00;
     }
 
     /* ----------------------------
@@ -79,18 +102,119 @@
         text-align: right;
         margin-bottom: 10px;
     }
-</style>
 
+    /* ----------------------------
+       Benchmark Panel
+    ---------------------------- */
+    .benchmark {
+        margin-top: 30px;
+        padding: 20px;
+        border: 1px solid #FF0000;
+        background-color: #1a1a1a;
+    }
+
+    #results {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #FF0000;
+    }
+
+    /* ----------------------------
+       Progress Bar / File Status
+    ---------------------------- */
+    #progressContainer {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #FF0000;
+        background-color: #1a1a1a;
+    }
+
+    #progressText {
+        margin-top: 8px;
+        color: #FF4C4C;
+    }
+
+    progress {
+        width: 100%;
+        height: 20px;
+    }
+
+    /* ----------------------------
+       File Metadata Display
+    ---------------------------- */
+    #fileMeta {
+        margin-top: 10px;
+        padding: 10px;
+        border: 1px solid #FF0000;
+        background-color: #1a1a1a;
+        color: #FF4C4C;
+    }
+
+    /* ----------------------------
+       Main Bar Chart Wrapper
+    ---------------------------- */
+    .chart-container {
+        width: 100%;
+        height: 400px;
+        background-color: #1a1a1a;
+        margin-top: 10px;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .chart-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    /* ----------------------------
+       Pie Chart Layout
+    ---------------------------- */
+    .pie-chart-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .pie-chart-box {
+        background-color: #1a1a1a;
+        border: 1px solid #FF0000;
+        padding: 15px;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    .pie-canvas-wrapper {
+        width: 100%;
+        height: 250px;
+        position: relative;
+    }
+
+    .pie-canvas-wrapper canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+    </style>
 </head>
 <body>
 
+<!-- ======================================
+     LOGIN / LOGOUT BUTTON AND STATUS
+====================================== -->
 <div class="top-bar">
     <button onclick="logout()">Logout</button>
 </div>
 
+<div id="statusIndicator">
+    Backend Status: <span id="statusText">Checking Connection</span>
+</div>
+
 <h1>Database System</h1>
 
-<!-- INPUT FORM -->
+<!-- =========================
+     ORIGINAL DATABASE FORM
+========================= -->
 <form id="recordForm">
     <input type="text" id="id" placeholder="ID" required>
     <input type="text" id="first_name" placeholder="First Name" required>
@@ -112,7 +236,9 @@
     <button type="submit">Add Record</button>
 </form>
 
-<!-- TABLE -->
+<!-- =========================
+     ORIGINAL TABLE
+========================= -->
 <table>
     <thead>
         <tr>
@@ -128,27 +254,102 @@
     <tbody id="tableBody"></tbody>
 </table>
 
+<!-- =========================
+     BENCHMARK SECTION
+========================= -->
+<div class="benchmark">
+
+    <h2>Encryption Benchmarking</h2>
+
+    <textarea id="testInput" rows="4" placeholder="Enter text to test..."></textarea>
+
+    <br>
+
+    <select id="modeSelect">
+        <option value="AES">AES</option>
+        <option value="LLM">LLM</option>
+        <option value="HYBRID">HYBRID</option>
+    </select>
+
+    <button onclick="runBenchmark()">Run Benchmark</button>
+
+    <h3>Upload File</h3>
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Test File</button>
+
+    <br><br>
+
+    <button onclick="downloadResults()">Download CSV</button>
+
+    <!-- =========================
+         FILE PROCESSING PROGRESS
+    ========================= -->
+    <div id="progressContainer" style="display:none; margin-top: 10px;">
+        <label for="progressBar">Processing file...</label>
+        <progress id="progressBar" value="0" max="100"></progress>
+        <p id="progressText">Starting...</p>
+    </div>
+
+    <!-- =========================
+         FILE METADATA DISPLAY
+    ========================= -->
+    <div id="fileMeta"></div>
+
+    <div id="results"></div>
+
+    <h3>Performance Graph</h3>
+    <div class="chart-container">
+        <canvas id="performanceChart"></canvas>
+    </div>
+
+    <h3>Average Encrypt vs Decrypt Split by Method</h3>
+
+    <div class="pie-chart-grid">
+        <div class="pie-chart-box">
+            <h3>AES</h3>
+            <div class="pie-canvas-wrapper">
+                <canvas id="aesPieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="pie-chart-box">
+            <h3>LLM</h3>
+            <div class="pie-canvas-wrapper">
+                <canvas id="llmPieChart"></canvas>
+            </div>
+        </div>
+
+        <div class="pie-chart-box">
+            <h3>HYBRID</h3>
+            <div class="pie-canvas-wrapper">
+                <canvas id="hybridPieChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- =========================
+     SCRIPT STARTS HERE
+========================= -->
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 /*
 =========================================
- AUTH CHECK (VERY IMPORTANT)
+ AUTH CHECK
 =========================================
 */
-
-// Get login state (convert from storage)
 const loggedIn = JSON.parse(localStorage.getItem("loggedIn"));
-
-// Redirect if not logged in
 if (!loggedIn) {
     window.location.href = "index.html";
 }
 
 /*
 =========================================
- DATABASE LOGIC (localStorage)
+ LOCAL DATABASE
 =========================================
 */
-
 let db = JSON.parse(localStorage.getItem("database")) || [];
 
 function saveDB() {
@@ -199,18 +400,444 @@ document.getElementById("recordForm").addEventListener("submit", function(e) {
     document.getElementById("recordForm").reset();
 });
 
-function deleteRecord(index) {
+window.deleteRecord = function(index) {
     db.splice(index, 1);
     saveDB();
     renderTable();
-}
+};
 
-function logout() {
+window.logout = function() {
     localStorage.removeItem("loggedIn");
     window.location.href = "index.html";
-}
+};
 
 renderTable();
+
+/*
+=========================================
+ CHART DATA STORAGE
+=========================================
+*/
+let chart;
+
+let chartLabels = [];
+
+let aesEncData = [];
+let aesDecData = [];
+let llmEncData = [];
+let llmDecData = [];
+let hybridEncData = [];
+let hybridDecData = [];
+
+let methodData = {
+    AES: { enc: [], dec: [] },
+    LLM: { enc: [], dec: [] },
+    HYBRID: { enc: [], dec: [] }
+};
+
+let aesPieChart;
+let llmPieChart;
+let hybridPieChart;
+
+/*
+=========================================
+ TEXT BENCHMARK
+=========================================
+*/
+window.runBenchmark = async function() {
+    const text = document.getElementById("testInput").value;
+    const mode = document.getElementById("modeSelect").value;
+
+    const resultsBox = document.getElementById("results");
+    const fileMeta = document.getElementById("fileMeta");
+
+    await fetch("http://127.0.0.1:5000/set_mode", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({mode})
+    });
+
+    const res = await fetch("http://127.0.0.1:5000/benchmark", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text})
+    });
+
+    const data = await res.json();
+
+    resultsBox.innerHTML = `
+        <p><strong>Input Type:</strong> Manual text</p>
+        <p><strong>Encrypted:</strong> ${data.encrypted}</p>
+        <p><strong>Decrypted:</strong> ${data.decrypted}</p>
+        <p><strong>Enc Time:</strong> ${data.encryption_time.toFixed(6)}s</p>
+        <p><strong>Dec Time:</strong> ${data.decryption_time.toFixed(6)}s</p>
+    `;
+
+    fileMeta.innerHTML = `
+        <p><strong>Input Type:</strong> Manual text</p>
+        <p><strong>Selected Mode:</strong> ${mode}</p>
+    `;
+
+    updateChart(mode, data.encryption_time, data.decryption_time);
+};
+
+/*
+=========================================
+ FILE UPLOAD + BENCHMARK
+=========================================
+*/
+window.uploadFile = async function() {
+    const file = document.getElementById("fileInput").files[0];
+    const mode = document.getElementById("modeSelect").value;
+
+    const resultsBox = document.getElementById("results");
+    const fileMeta = document.getElementById("fileMeta");
+    const progressContainer = document.getElementById("progressContainer");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+
+    if (!file) {
+        alert("Please choose a file first.");
+        return;
+    }
+
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(3);
+
+    try {
+        progressContainer.style.display = "block";
+        progressBar.value = 10;
+        progressText.textContent = "Preparing upload...";
+
+        await fetch("http://127.0.0.1:5000/set_mode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mode })
+        });
+
+        progressBar.value = 25;
+        progressText.textContent = "Uploading file...";
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("http://127.0.0.1:5000/benchmark_file", {
+            method: "POST",
+            body: formData
+        });
+
+        progressBar.value = 75;
+        progressText.textContent = "Processing benchmark results...";
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error || "File benchmark failed.");
+        }
+
+        fileMeta.innerHTML = `
+            <p><strong>File Name:</strong> ${file.name}</p>
+            <p><strong>File Size:</strong> ${fileSizeMB} MB</p>
+            <p><strong>Selected Mode:</strong> ${mode}</p>
+        `;
+
+        resultsBox.innerHTML = `
+            <p><strong>Uploaded File:</strong> ${file.name}</p>
+            <p><strong>Encrypted:</strong> ${data.encrypted}</p>
+            <p><strong>Decrypted:</strong> ${data.decrypted}</p>
+            <p><strong>Encryption Time:</strong> ${data.encryption_time.toFixed(6)}s</p>
+            <p><strong>Decryption Time:</strong> ${data.decryption_time.toFixed(6)}s</p>
+        `;
+
+        progressBar.value = 90;
+        progressText.textContent = "Generating graph...";
+
+        updateChart(mode, data.encryption_time, data.decryption_time);
+
+        progressBar.value = 100;
+        progressText.textContent = "Complete.";
+
+        setTimeout(() => {
+            progressContainer.style.display = "none";
+            progressBar.value = 0;
+            progressText.textContent = "Starting...";
+        }, 1200);
+
+    } catch (error) {
+        console.error("Upload error:", error);
+        resultsBox.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+        progressText.textContent = "Failed.";
+    }
+};
+
+/*
+=========================================
+ MAIN BAR CHART UPDATE
+=========================================
+*/
+function updateChart(mode, enc, dec) {
+    const canvas = document.getElementById("performanceChart");
+
+    if (!canvas) {
+        console.error("performanceChart canvas not found.");
+        return;
+    }
+
+    const label = mode + " #" + (chartLabels.length + 1);
+    chartLabels.push(label);
+
+    aesEncData.push(null);
+    aesDecData.push(null);
+    llmEncData.push(null);
+    llmDecData.push(null);
+    hybridEncData.push(null);
+    hybridDecData.push(null);
+
+    const lastIndex = chartLabels.length - 1;
+
+    if (mode === "AES") {
+        aesEncData[lastIndex] = enc;
+        aesDecData[lastIndex] = dec;
+    } else if (mode === "LLM") {
+        llmEncData[lastIndex] = enc;
+        llmDecData[lastIndex] = dec;
+    } else if (mode === "HYBRID") {
+        hybridEncData[lastIndex] = enc;
+        hybridDecData[lastIndex] = dec;
+    }
+
+    if (methodData[mode]) {
+        methodData[mode].enc.push(enc);
+        methodData[mode].dec.push(dec);
+    }
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    const ctx = canvas.getContext("2d");
+
+    chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: chartLabels,
+            datasets: [
+                {
+                    label: "AES Encode",
+                    data: aesEncData,
+                    backgroundColor: "#0080FF",
+                    borderColor: "#0080FF",
+                    borderWidth: 1
+                },
+                {
+                    label: "AES Decode",
+                    data: aesDecData,
+                    backgroundColor: "#66B2FF",
+                    borderColor: "#66B2FF",
+                    borderWidth: 1
+                },
+                {
+                    label: "LLM Encode",
+                    data: llmEncData,
+                    backgroundColor: "#FF3030",
+                    borderColor: "#FF3030",
+                    borderWidth: 1
+                },
+                {
+                    label: "LLM Decode",
+                    data: llmDecData,
+                    backgroundColor: "#FF8080",
+                    borderColor: "#FF8080",
+                    borderWidth: 1
+                },
+                {
+                    label: "HYBRID Encode",
+                    data: hybridEncData,
+                    backgroundColor: "#00CC66",
+                    borderColor: "#00CC66",
+                    borderWidth: 1
+                },
+                {
+                    label: "HYBRID Decode",
+                    data: hybridDecData,
+                    backgroundColor: "#66FF99",
+                    borderColor: "#66FF99",
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#FF0000"
+                    }
+                },
+                datalabels: {
+                    color: "#FFFFFF",
+                    anchor: "end",
+                    align: "start",
+                    formatter: function(value) {
+                        return value !== null ? value.toFixed(6) + "s" : "";
+                    },
+                    font: {
+                        weight: "bold",
+                        size: 10
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#FF0000"
+                    },
+                    grid: {
+                        color: "#444444"
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "#FF0000"
+                    },
+                    grid: {
+                        color: "#444444"
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    updatePieCharts();
+}
+
+/*
+=========================================
+ AVERAGE HELPER
+=========================================
+*/
+function average(values) {
+    if (!values.length) return 0;
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+/*
+=========================================
+ BUILD / UPDATE ONE PIE CHART
+=========================================
+*/
+function buildPieChart(canvasId, existingChart, methodName) {
+    const canvas = document.getElementById(canvasId);
+
+    if (!canvas) {
+        console.error(`${canvasId} not found.`);
+        return existingChart;
+    }
+
+    const encAvg = average(methodData[methodName].enc);
+    const decAvg = average(methodData[methodName].dec);
+
+    if (existingChart) {
+        existingChart.destroy();
+    }
+
+    const ctx = canvas.getContext("2d");
+
+    return new Chart(ctx, {
+        type: "pie",
+        data: {
+            labels: ["Encrypt", "Decrypt"],
+            datasets: [
+                {
+                    data: [encAvg, decAvg],
+                    backgroundColor: [
+                        "#00CC66",
+                        "#FF3030"
+                    ],
+                    borderColor: "#111111",
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#FF0000"
+                    }
+                },
+                datalabels: {
+                    color: "#FFFFFF",
+                    formatter: function(value, context) {
+                        const data = context.chart.data.datasets[0].data;
+                        const total = data.reduce((sum, current) => sum + current, 0);
+                        const percentage = total ? ((value / total) * 100).toFixed(1) : 0;
+                        return percentage + "%";
+                    },
+                    font: {
+                        weight: "bold",
+                        size: 12
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+}
+
+/*
+=========================================
+ UPDATE ALL PIE CHARTS
+=========================================
+*/
+function updatePieCharts() {
+    aesPieChart = buildPieChart("aesPieChart", aesPieChart, "AES");
+    llmPieChart = buildPieChart("llmPieChart", llmPieChart, "LLM");
+    hybridPieChart = buildPieChart("hybridPieChart", hybridPieChart, "HYBRID");
+}
+
+/*
+=========================================
+ DOWNLOAD RESULTS CSV
+=========================================
+*/
+window.downloadResults = function() {
+    window.open("http://127.0.0.1:5000/download_results");
+};
+
+/*
+=========================================
+ BACKEND STATUS INDICATOR
+=========================================
+*/
+async function checkBackendStatus() {
+    const statusText = document.getElementById("statusText");
+
+    try {
+        const res = await fetch("http://127.0.0.1:5000/health");
+
+        if (res.ok) {
+            statusText.textContent = "Online";
+            statusText.className = "online";
+        } else {
+            throw new Error("Server error");
+        }
+
+    } catch (error) {
+        statusText.textContent = "Offline";
+        statusText.className = "offline";
+    }
+}
+
+checkBackendStatus();
+setInterval(checkBackendStatus, 10000);
+
+});
 </script>
+
 </body>
 </html>
