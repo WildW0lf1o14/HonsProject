@@ -113,12 +113,6 @@
         background-color: #1a1a1a;
     }
 
-    #results {
-        margin-top: 10px;
-        padding: 10px;
-        border: 1px solid #FF0000;
-    }
-
     /* ----------------------------
        Progress Bar / File Status
     ---------------------------- */
@@ -140,14 +134,48 @@
     }
 
     /* ----------------------------
-       File Metadata Display
+       Output Results Display
     ---------------------------- */
-    #fileMeta {
+    #outputResults {
+        margin-top: 15px;
+        padding: 15px;
+        border: 1px solid #FF0000;
+        background-color: #1a1a1a;
+        color: #FF4C4C;
+    }
+
+    #outputResults h3 {
+        margin-top: 0;
+        text-align: left;
+        color: #FF0000;
+    }
+
+    #outputResults p {
+        margin: 6px 0;
+    }
+
+    /* ----------------------------
+       Raw Results Collapsible
+    ---------------------------- */
+    details {
+        margin-top: 12px;
+        padding: 10px;
+        border: 1px solid #FF0000;
+        background-color: #111111;
+    }
+
+    summary {
+        cursor: pointer;
+        font-weight: bold;
+        color: #FF0000;
+    }
+
+    #results {
         margin-top: 10px;
         padding: 10px;
         border: 1px solid #FF0000;
         background-color: #1a1a1a;
-        color: #FF4C4C;
+        overflow-wrap: anywhere;
     }
 
     /* ----------------------------
@@ -291,11 +319,24 @@
     </div>
 
     <!-- =========================
-         FILE METADATA DISPLAY
+         CLEAN OUTPUT RESULTS BOX
     ========================= -->
-    <div id="fileMeta"></div>
+    <div id="outputResults">
+        <h3>Output Results</h3>
+        <p><strong>File Name:</strong> N/A</p>
+        <p><strong>File Size:</strong> N/A</p>
+        <p><strong>Method of Encryption:</strong> N/A</p>
+        <p><strong>Time to Encrypt:</strong> N/A</p>
+        <p><strong>Time to Decrypt:</strong> N/A</p>
+    </div>
 
-    <div id="results"></div>
+    <!-- =========================
+         COLLAPSIBLE RAW OUTPUT
+    ========================= -->
+    <details>
+        <summary>Show Raw Encrypted / Decrypted Output</summary>
+        <div id="results"></div>
+    </details>
 
     <h3>Performance Graph</h3>
     <div class="chart-container">
@@ -329,9 +370,6 @@
 
 </div>
 
-<!-- =========================
-     SCRIPT STARTS HERE
-========================= -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -441,15 +479,40 @@ let hybridPieChart;
 
 /*
 =========================================
+ HELPER: FORMAT TO 2 SIGNIFICANT FIGURES
+ Used only for chart display readability
+=========================================
+*/
+function formatSig2(value) {
+    return Number(value).toPrecision(2);
+}
+
+/*
+=========================================
+ HELPER: UPDATE OUTPUT RESULTS BOX
+ Full precision kept here for accuracy
+=========================================
+*/
+function updateOutputResults(fileName, fileSize, mode, encTime, decTime) {
+    document.getElementById("outputResults").innerHTML = `
+        <h3>Output Results</h3>
+        <p><strong>File Name:</strong> ${fileName}</p>
+        <p><strong>File Size:</strong> ${fileSize}</p>
+        <p><strong>Method of Encryption:</strong> ${mode}</p>
+        <p><strong>Time to Encrypt:</strong> ${encTime.toFixed(6)}s</p>
+        <p><strong>Time to Decrypt:</strong> ${decTime.toFixed(6)}s</p>
+    `;
+}
+
+/*
+=========================================
  TEXT BENCHMARK
 =========================================
 */
 window.runBenchmark = async function() {
     const text = document.getElementById("testInput").value;
     const mode = document.getElementById("modeSelect").value;
-
     const resultsBox = document.getElementById("results");
-    const fileMeta = document.getElementById("fileMeta");
 
     await fetch("http://127.0.0.1:5000/set_mode", {
         method: "POST",
@@ -465,17 +528,11 @@ window.runBenchmark = async function() {
 
     const data = await res.json();
 
+    updateOutputResults("Manual Text Input", "N/A", mode, data.encryption_time, data.decryption_time);
+
     resultsBox.innerHTML = `
-        <p><strong>Input Type:</strong> Manual text</p>
         <p><strong>Encrypted:</strong> ${data.encrypted}</p>
         <p><strong>Decrypted:</strong> ${data.decrypted}</p>
-        <p><strong>Enc Time:</strong> ${data.encryption_time.toFixed(6)}s</p>
-        <p><strong>Dec Time:</strong> ${data.decryption_time.toFixed(6)}s</p>
-    `;
-
-    fileMeta.innerHTML = `
-        <p><strong>Input Type:</strong> Manual text</p>
-        <p><strong>Selected Mode:</strong> ${mode}</p>
     `;
 
     updateChart(mode, data.encryption_time, data.decryption_time);
@@ -491,7 +548,6 @@ window.uploadFile = async function() {
     const mode = document.getElementById("modeSelect").value;
 
     const resultsBox = document.getElementById("results");
-    const fileMeta = document.getElementById("fileMeta");
     const progressContainer = document.getElementById("progressContainer");
     const progressBar = document.getElementById("progressBar");
     const progressText = document.getElementById("progressText");
@@ -501,7 +557,7 @@ window.uploadFile = async function() {
         return;
     }
 
-    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(3);
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(3) + " MB";
 
     try {
         progressContainer.style.display = "block";
@@ -534,18 +590,11 @@ window.uploadFile = async function() {
             throw new Error(data.error || "File benchmark failed.");
         }
 
-        fileMeta.innerHTML = `
-            <p><strong>File Name:</strong> ${file.name}</p>
-            <p><strong>File Size:</strong> ${fileSizeMB} MB</p>
-            <p><strong>Selected Mode:</strong> ${mode}</p>
-        `;
+        updateOutputResults(file.name, fileSizeMB, mode, data.encryption_time, data.decryption_time);
 
         resultsBox.innerHTML = `
-            <p><strong>Uploaded File:</strong> ${file.name}</p>
             <p><strong>Encrypted:</strong> ${data.encrypted}</p>
             <p><strong>Decrypted:</strong> ${data.decrypted}</p>
-            <p><strong>Encryption Time:</strong> ${data.encryption_time.toFixed(6)}s</p>
-            <p><strong>Decryption Time:</strong> ${data.decryption_time.toFixed(6)}s</p>
         `;
 
         progressBar.value = 90;
@@ -572,6 +621,8 @@ window.uploadFile = async function() {
 /*
 =========================================
  MAIN BAR CHART UPDATE
+ Method-specific encode/decode colours
+ Values displayed at 2 significant figures
 =========================================
 */
 function updateChart(mode, enc, dec) {
@@ -624,43 +675,43 @@ function updateChart(mode, enc, dec) {
                 {
                     label: "AES Encode",
                     data: aesEncData,
-                    backgroundColor: "#0080FF",
-                    borderColor: "#0080FF",
+                    backgroundColor: "#26619C",
+                    borderColor: "#26619C",
                     borderWidth: 1
                 },
                 {
                     label: "AES Decode",
                     data: aesDecData,
-                    backgroundColor: "#66B2FF",
-                    borderColor: "#66B2FF",
+                    backgroundColor: "#87CEFA",
+                    borderColor: "#87CEFA",
                     borderWidth: 1
                 },
                 {
                     label: "LLM Encode",
                     data: llmEncData,
-                    backgroundColor: "#FF3030",
-                    borderColor: "#FF3030",
+                    backgroundColor: "#DC143C",
+                    borderColor: "#DC143C",
                     borderWidth: 1
                 },
                 {
                     label: "LLM Decode",
                     data: llmDecData,
-                    backgroundColor: "#FF8080",
-                    borderColor: "#FF8080",
+                    backgroundColor: "#FFCBA4",
+                    borderColor: "#FFCBA4",
                     borderWidth: 1
                 },
                 {
                     label: "HYBRID Encode",
                     data: hybridEncData,
-                    backgroundColor: "#00CC66",
-                    borderColor: "#00CC66",
+                    backgroundColor: "#006400",
+                    borderColor: "#006400",
                     borderWidth: 1
                 },
                 {
                     label: "HYBRID Decode",
                     data: hybridDecData,
-                    backgroundColor: "#66FF99",
-                    borderColor: "#66FF99",
+                    backgroundColor: "#90EE90",
+                    borderColor: "#90EE90",
                     borderWidth: 1
                 }
             ]
@@ -679,7 +730,7 @@ function updateChart(mode, enc, dec) {
                     anchor: "end",
                     align: "start",
                     formatter: function(value) {
-                        return value !== null ? value.toFixed(6) + "s" : "";
+                        return value !== null ? formatSig2(value) + "s" : "";
                     },
                     font: {
                         weight: "bold",
@@ -699,7 +750,10 @@ function updateChart(mode, enc, dec) {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        color: "#FF0000"
+                        color: "#FF0000",
+                        callback: function(value) {
+                            return formatSig2(value);
+                        }
                     },
                     grid: {
                         color: "#444444"
@@ -726,6 +780,9 @@ function average(values) {
 /*
 =========================================
  BUILD / UPDATE ONE PIE CHART
+ Pie colours:
+ Encode = Gold
+ Decode = Magenta
 =========================================
 */
 function buildPieChart(canvasId, existingChart, methodName) {
@@ -748,13 +805,13 @@ function buildPieChart(canvasId, existingChart, methodName) {
     return new Chart(ctx, {
         type: "pie",
         data: {
-            labels: ["Encrypt", "Decrypt"],
+            labels: ["Encode", "Decode"],
             datasets: [
                 {
                     data: [encAvg, decAvg],
                     backgroundColor: [
-                        "#00CC66",
-                        "#FF3030"
+                        "#FFD700",
+                        "#FF00FF"
                     ],
                     borderColor: "#111111",
                     borderWidth: 2
