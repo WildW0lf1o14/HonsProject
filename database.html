@@ -150,8 +150,25 @@
         color: #FF0000;
     }
 
-    #outputResults p {
-        margin: 6px 0;
+    #outputResultsList {
+        margin-top: 10px;
+    }
+
+    .output-run {
+        border: 1px solid #FF0000;
+        background-color: #111111;
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .output-run h4 {
+        margin: 0 0 8px 0;
+        color: #FF0000;
+    }
+
+    .output-run p {
+        margin: 4px 0;
+        color: #FF4C4C;
     }
 
     /* ----------------------------
@@ -323,11 +340,7 @@
     ========================= -->
     <div id="outputResults">
         <h3>Output Results</h3>
-        <p><strong>File Name:</strong> N/A</p>
-        <p><strong>File Size:</strong> N/A</p>
-        <p><strong>Method of Encryption:</strong> N/A</p>
-        <p><strong>Time to Encrypt:</strong> N/A</p>
-        <p><strong>Time to Decrypt:</strong> N/A</p>
+        <div id="outputResultsList"></div>
     </div>
 
     <!-- =========================
@@ -477,6 +490,9 @@ let aesPieChart;
 let llmPieChart;
 let hybridPieChart;
 
+// Counts total benchmark runs displayed in Output Results
+let runCounter = 0;
+
 /*
 =========================================
  HELPER: FORMAT TO 2 SIGNIFICANT FIGURES
@@ -489,19 +505,29 @@ function formatSig2(value) {
 
 /*
 =========================================
- HELPER: UPDATE OUTPUT RESULTS BOX
- Full precision kept here for accuracy
+ HELPER: APPEND OUTPUT RESULTS
+ Keeps every run in the results box
 =========================================
 */
 function updateOutputResults(fileName, fileSize, mode, encTime, decTime) {
-    document.getElementById("outputResults").innerHTML = `
-        <h3>Output Results</h3>
+    runCounter += 1;
+
+    const resultsList = document.getElementById("outputResultsList");
+
+    const entry = document.createElement("div");
+    entry.className = "output-run";
+
+    entry.innerHTML = `
+        <h4>${mode} Run ${runCounter}</h4>
         <p><strong>File Name:</strong> ${fileName}</p>
         <p><strong>File Size:</strong> ${fileSize}</p>
         <p><strong>Method of Encryption:</strong> ${mode}</p>
         <p><strong>Time to Encrypt:</strong> ${encTime.toFixed(6)}s</p>
         <p><strong>Time to Decrypt:</strong> ${decTime.toFixed(6)}s</p>
     `;
+
+    // Add newest result at the top
+    resultsList.prepend(entry);
 }
 
 /*
@@ -781,7 +807,7 @@ function average(values) {
 =========================================
  BUILD / UPDATE ONE PIE CHART
  Pie colours:
- Encode = Gold
+ Encode = Orange
  Decode = Magenta
 =========================================
 */
@@ -810,7 +836,7 @@ function buildPieChart(canvasId, existingChart, methodName) {
                 {
                     data: [encAvg, decAvg],
                     backgroundColor: [
-                        "#FFD700",
+                        "#FF8C00",
                         "#FF00FF"
                     ],
                     borderColor: "#111111",
