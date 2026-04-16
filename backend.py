@@ -105,21 +105,55 @@ def llm_decrypt(text):
 # MODE 3: HYBRID ENCRYPTION - REVERSIBLE TRANSFORMATION
 # -------------------------------------------------------
 
+#helper function for encryption
+def hybrid_transform_encrypt(text):
+    """
+    Reversible transformation used only by Hybrid mode.
+
+    Steps:
+    1. Reverse the full string
+    2. Shift each character by +1
+    3. Encode using base64
+
+    This provides an additional transformation layer
+    while remaining fully reversible.
+    """
+    reversed_text = text[::-1]
+    shifted_text = "".join(chr((ord(char) + 1) % 256) for char in reversed_text)
+    return base64.b64encode(shifted_text.encode("latin1")).decode("ascii")
+
+#helper function for decryption
+def hybrid_transform_decrypt(text):
+    """
+    Reverse the Hybrid-specific transformation.
+
+    Steps:
+    1. Decode base64
+    2. Shift each character by -1
+    3. Reverse the string back
+    """
+    decoded_text = base64.b64decode(text).decode("latin1")
+    unshifted_text = "".join(chr((ord(char) - 1) % 256) for char in decoded_text)
+    return unshifted_text[::-1]
+
+#hybrid encrypt function proper
 def hybrid_encrypt(text):
     """
     Combines:
     1. AES encryption (secure)
-    2. LLM-style transformation (extra obfuscation)
+    2. Reversible Hybrid-specific transformation
+       (extra obfuscation without breaking decryption)
     """
-    return llm_encrypt(aes_encrypt(text))
+    return hybrid_transform_encrypt(aes_encrypt(text))
 
+#hybrid decrypt function proper
 def hybrid_decrypt(text):
     """
     Reverse hybrid process:
-    1. Undo LLM transformation
+    1. Undo Hybrid-specific transformation
     2. Decrypt AES
     """
-    return aes_decrypt(llm_decrypt(text))
+    return aes_decrypt(hybrid_transform_decrypt(text))
 
 # -----------------------------------------
 # ENCRYPTION SWITCH
