@@ -116,22 +116,31 @@
     <div class="info">
         <h1>Secure Database System</h1>
 
-        <p>
-            This project explores the design and implementation of a local database system
-            with layered encryption techniques. The goal is to evaluate different approaches
-            to securing sensitive user data, including encryption at rest and during processing.
-        </p>
+      <p>
+    This project investigates the performance and practicality of different data encryption approaches within a local database system. 
+    The primary aim is to compare how effectively various methods can secure data while maintaining acceptable processing efficiency.
+</p>
 
-        <p>
-            Future features include:
-            <ul>
-                <li>Encrypted data storage</li>
-                <li>Secure authentication mechanisms</li>
-                <li>Comparison of encryption strategies</li>
-                <li>Attack simulation and analysis</li>
-            </ul>
-        </p>
-    </div>
+<p>
+    Three encryption strategies are evaluated:
+    <ul>
+        <li><strong>AES</strong> – a secure, industry-standard encryption method used as the baseline</li>
+        <li><strong>LLM-style transformation</strong> – a simulated approach inspired by language model behaviour</li>
+        <li><strong>Hybrid</strong> – a combined method applying AES with additional reversible transformations</li>
+    </ul>
+</p>
+
+<p>
+    The system allows users to input text or upload files, which are then processed through the selected encryption method. 
+    For each run, the system measures encryption and decryption times, visualising results through graphs and statistical summaries.
+</p>
+
+<p>
+    The key focus of the project is to evaluate the trade-off between security and performance. 
+    By analysing execution time, data handling efficiency, and method behaviour at scale, the project highlights which approaches 
+    are most viable for real-world secure database applications.
+</p>
+</div>
 
     <!-- -------------------------
          LOGIN SECTION
